@@ -1,0 +1,24 @@
+{
+  "name": "anvil.scaffold",
+  "version": "0.1.0",
+  "description": "Generic scaffolding utility for the anvil.js build system",
+  "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/appendto/anvil.scaffold.git"
+  },
+  "keywords": [
+    "anvil",
+    "scaffold",
+    "scaffolding"
+  ],
+  "author": "appendto",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "shelljs": ">=0.0.8",
+    "prompt": "",
+    "handlebars": "",
+    "colors": ""
+  }
+}
