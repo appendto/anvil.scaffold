@@ -217,7 +217,7 @@ In addition, all keys and string values are passed through Handlebars for templa
 output: {
 	src: {
 		scripts: {
-			{{dirType}}: {
+			'{{dirType}}': {
 				'{{scriptName}}.js': '(function ({{lib}}) {})({{lib}});'
 			}
 		}
