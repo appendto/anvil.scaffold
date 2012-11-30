@@ -26,11 +26,7 @@ In order for your plugin or task to consume anvil's scaffolding, it must also be
 }
 ```
 
----
-
 ## Usage
-
----
 
 ### Quick Look
 
@@ -90,8 +86,6 @@ anvil.scaffold( definition );
 ```
 
 Having `anvil.scaffold` installed exposes a new method called `anvil.scaffold` which plugins can use to create scaffold definitions. These scaffold definitions must currently exist within a plugin's `configure` method. `anvil.scaffold` accepts a single object for defining the scaffold:
-
-```
 
 ```javascript
 module.exports = function (_, anvil) {
@@ -207,10 +201,32 @@ Invoking a scaffold from the command line:
 anvil scaffold <type>
 ```
 
-where `type` is the name of a scaffold definition. For example, if one wanted to scaffold a plugin using the previous definition:
+where `type` is the name of a scaffold definition. `scaffold` is also aliased to `generate` or `gen`:
+
+```sh
+anvil generate backbone:model
+anvil gen jquery-plugin
+```
+
+As an example, if you wanted to scaffold a plugin using our previous definition:
 
 ```sh
 anvil scaffold plugin
 ```
 
-More coming...
+Since there was prompt information defined in the scaffold, this would be the expected output to the command line:
+
+```sh
+$ anvil scaffold plugin
+checking for 0 build dependencies 
+loading plugins
+loading tasks from /Users/me/git/some-plugin/tasks
+plugin configuration complete
+starting activity, scaffold
+	running plugin: 'anvil.scaffold'
+Please choose a name for this plugin: awesome
+Creating directory: lib
+Creating directory: src
+Creating file: index.js
+```
+
