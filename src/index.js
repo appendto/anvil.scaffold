@@ -98,7 +98,7 @@ module.exports = function (_, anvil) {
 			var scaffold = this.scaffold;
 
 			// At the bare minimum, store the scaffold's type for template consumption
-			_.extend(this.viewContext, {
+			_.extend(this.viewContext, scaffold.data, {
 				type: scaffold.type
 			});
 

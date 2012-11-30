@@ -2,7 +2,7 @@
 
 `anvil.scaffold` is a generic scaffolding utility for the [anvil.js](https://github.com/arobson/anvil.js) Node.js build engine. `anvil.scaffold` exposes a method that allows other plugins to configure scaffold definitions using a conventional format to generate templated files and directories.
 
----
+--
 
 ## Installation
 
@@ -12,7 +12,7 @@ In order to use `anvil.scaffold` you must first have Anvil installed, then run t
 anvil install anvil.scaffold
 ```
 
-In order for your plugin or task to consume anvil's scaffolding, it must also be a required plugin within your project's `package.json`:
+In order for your plugin or task to consume Anvil's scaffolding, it must also be a required plugin within your project's `package.json`:
 
 ```js
 {
@@ -30,12 +30,11 @@ In order for your plugin or task to consume anvil's scaffolding, it must also be
 
 ### Quick Look
 
-
-Once `anvil.scaffold` is installed, you can start consuming it with your own anvil plugins. As a simple demo, here is an anvil plugin that will define how additional anvil plugins can be scaffolded:
+Once `anvil.scaffold` is installed, you can start consuming it with your own Anvil plugins. As a simple demo, here is an anvil plugin that will define how additional Anvil plugins can be scaffolded:
 
 ```javascript
 module.exports = function (_, anvil) {
-	var content = readFile('./plugin.template.js');
+	var content = readFileAsString('./plugin.template.js');
 
 	return anvil.plugin({
 		name: 'anvil.scaffold.plugin',
@@ -104,9 +103,9 @@ module.exports = function (_, anvil) {
 
 #### Properties
 
-The following is a list of acceptable properties that can be set on the scaffold definition object:
+The following is a list of acceptable properties that can be set on the scaffold definition object.
 
----
+--
 
 `type`
 
@@ -120,7 +119,7 @@ _Examples_
 
 `type: 'backbone:model`
 
----
+--
 
 `prompt`
 
@@ -162,36 +161,77 @@ prompt: [{
 
 Please see [prompt](https://github.com/flatiron/prompt#usage) for more detailed usage of the `prompt` API.
 
----
+--
 
 `output`
 
-Define the structure of directories and files to write to the file system. `output` accepts a single object/map to define the generated structure. Object keys map to the name of the generated file or directory. If the value provided for the key is an object, a directory will be created with the key name. If the value provided for the key is a string, a file will be created, using the string value as the content for the file and the key as the file name.
+**Take note that at this time, using output from scaffolding will overwrite any files and directories specified. Please use caution when creating your output format.**
 
-You can also nest additional files and directories within objects, providing the ability to create somewhat complex scaffolding structures.
-
-In addition, all keys and string values are Handlebars templates and will be given all plugin metadata (e.g. plugin type, user provided input, etc.) as a model to the template. This allows for dynamic generation of directory names, file names, as well as file content.
-
-_Examples_
+Define the structure of directories and files to write to the file system. This accepts a map of properties to file and directory names and contents. If a property is an object, a directory will be generated. If a property is a string, a file will be generated. Take the following example:
 
 ```javascript
-// Generate a lib directory and a src directory with a single
-// index.js file which contains a type equal to the type of scaffolding running
 output: {
-	lib: {},
+	destination: {}
+}
+```
+
+Since `destination` is an object, a directory with that name will be created. It should also be possible to generate directories using a more complex path style:
+
+```javascript
+output: {
+	'src/scripts/external': {}
+}
+```
+
+This output would create an `external` directory within `src/scripts`, additionally generating those directories as well if they did not already exist. Since the value of the object of this destination is empty, the directory itself will also remain empty. Nesting any structures within the object will create a nested directory tree:
+
+```javascript
+output: {
 	src: {
-		"index.js": "module.{{type}} = function () {};"
+		scripts: {
+			external: {}
+		}
 	}
 }
 ```
 
+In order to generate files, the property's value must be a string. Continuing with our previous example:
+
 ```javascript
-// Generate a single HTML file with its name based on a
-// name parameter supplied by the user
 output: {
-	"{{name}}.html": "<!doctype html><html>...</html>"
+	src: {
+		scripts: {
+			external: {
+				'file.js': '(function () {})();'
+			}
+		}
+	}
 }
 ```
+
+This would output the same directory structure as before, except now a `file.js` will be created in the `external` directory. The contents to use for the file are the string value of the property, or `(function () {})();`. You may also choose to store the content of the file in another file and read it as a string, possibly making maintenance of these files easier.
+
+In addition, all keys and string values are passed through Handlebars for templating. This allows you to dynamically generate file contents or even file and directory names themselves:
+
+```javascript
+output: {
+	src: {
+		scripts: {
+			{{dirType}}: {
+				'{{scriptName}}.js': '(function ({{lib}}) {})({{lib}});'
+			}
+		}
+	}
+}
+```
+
+The data which is used as a model for the templates comes from data optionally supplied in the scaffold or from a user's inputs at the command prompts. This data is automatically merged together for you. The only property passed to `anvil.scaffold` by default is the `type` property.
+
+--
+
+`data`
+
+An object containing additional data to pass to scaffold templates (e.g. file contents and file and directory names). This data will be automatically merged with other data including properties provided by `anvil.scaffold` and from user input prompt responses. Please note that any properties provided in `data` that match names provided in `prompt` will have their values overwritten by user input.
 
 ### Command line
 
