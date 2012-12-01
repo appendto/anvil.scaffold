@@ -115,9 +115,9 @@ _Examples_
 
 `type: 'plugin'`
 
-`type: 'jquery-plugin`
+`type: 'jquery-plugin'`
 
-`type: 'backbone:model`
+`type: 'backbone:model'`
 
 --
 
