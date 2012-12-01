@@ -233,6 +233,21 @@ The data which is used as a model for the templates comes from data optionally s
 
 An object containing additional data to pass to scaffold templates (e.g. file contents and file and directory names). This data will be automatically merged with other data including properties provided by `anvil.scaffold` and from user input prompt responses. Please note that any properties provided in `data` that match names provided in `prompt` will have their values overwritten by user input.
 
+_Examples_
+
+```javascript
+data: {
+	author: 'appendTo',
+	status: 'l33t'
+},
+// Now usable within scaffold templates:
+output: {
+	scripts: {
+		'{{author}}.js': 'console.log("This app is {{status}}");'
+	}
+}
+```
+
 ### Command line
 
 Invoking a scaffold from the command line:
