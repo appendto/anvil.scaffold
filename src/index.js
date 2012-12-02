@@ -26,17 +26,6 @@ module.exports = function (_, anvil) {
 			// Normalize the command from any of its aliases
 			var action = command.scaffold || command.generate || command.gen;
 
-			// Continue if the scaffold option is not used on the command line
-			if (!action) {
-				done(this.doScaffold);
-			}
-
-			this.doScaffold = true;
-
-			// Force scaffolding to run before any other plugin,
-			// allowing any plugin to generate a scaffold
-			anvil.config.activityOrder.unshift('scaffold');
-
 			// Expose a static method on anvil for defining scaffolds
 			anvil.scaffold = function (format) {
 				// Instead of tracking all registered scaffolds,
@@ -48,6 +37,18 @@ module.exports = function (_, anvil) {
 
 				plugin.scaffold = format;
 			};
+
+			// Continue if the scaffold option is not used on the command line
+			if (!action) {
+				done(this.doScaffold);
+				return;
+			}
+
+			this.doScaffold = true;
+
+			// Force scaffolding to run before any other plugin,
+			// allowing any plugin to generate a scaffold
+			anvil.config.activityOrder.unshift('scaffold');
 		
 			done();
 		},
@@ -93,6 +94,7 @@ module.exports = function (_, anvil) {
 		run: function (done) {
 			if (!this.doScaffold) {
 				done();
+				return;
 			}
 
 			var scaffold = this.scaffold;
