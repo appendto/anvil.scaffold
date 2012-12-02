@@ -41,6 +41,7 @@ module.exports = function (_, anvil) {
 		configure: function (config, command, done) {
 			anvil.scaffold({
 				type: 'plugin',
+				description: 'Creates a new anvil plugin',
 				prompt: [{
 					name: 'name',
 					description: 'Please choose a name for this plugin:',
@@ -62,7 +63,7 @@ module.exports = function (_, anvil) {
 
 The contents of the `plugin.template.js` is:
 
-```js
+```plain
 module.exports = function (_, anvil) {
 	return anvil.plugin({
 		name: '{{name}}',
@@ -120,6 +121,19 @@ _Examples_
 `type: 'backbone:model'`
 
 --
+
+`description`
+
+A short description that will (eventually) be shown when when a user runs `anvil scaffold list`
+
+_Examples_
+
+`description: 'Create an empty Backbone project'`
+
+`description: 'Create a new Anvil plugin'`
+
+--
+
 
 `prompt`
 
@@ -227,6 +241,30 @@ output: {
 
 The data which is used as a model for the templates comes from data optionally supplied in the scaffold or from a user's inputs at the command prompts. This data is automatically merged together for you. The only property passed to `anvil.scaffold` by default is the `type` property.
 
+Finally, you can supply a function for any one of the values as long as your function returns either a string (the contents of a file), or an object for a new directory level. The final merged user input and `data` from your scaffold will be passed into the method as its only argument.
+
+This example would generate a different file based on theoretical user input:
+
+```javascript
+output: function ( data ) {
+	if ( data.short ) {
+		return { "short.js": fileContentsShort }
+	} else {
+		return { "normal.js": fileContentsNormal }
+	}
+}
+```
+
+You can (and should) use this to load files just when you need them instead of loading them every time your plugin is fired up:
+
+```javascript
+output: {
+	"yourfile.js": function () {
+		return fs.readFileSync( "./templates/yourfile.js", "utf8" );
+	}
+}
+```
+
 --
 
 `data`
@@ -247,6 +285,64 @@ output: {
 	}
 }
 ```
+
+#### Methods
+
+The following is a list of methods that have default functionality, but you can override to provide a greater level of control to your scaffolds:
+
+--
+
+`render`:
+
+All keys and values on your `output` object are passed through this method. The default `render` method looks like this:
+
+```javascript
+render: function ( mode, template, filename ) {
+	var template = Handlebars.compile(template);
+	return template(this._viewContext);
+}
+```
+
+* `mode`: Will either be `"name"` or `"file"` based on if its rendering a file name/directory name or the contents of a file.
+* `template`: The contents of either the file name/directory name, or the contents of a file
+* `filename`: This is only passed in `"file"` mode, and will be just the name and extension of the file being processed
+
+To disable templating entirely, pass `false` as the value for `render`:
+
+```javascript
+render: false
+```
+
+--
+
+`processData`
+
+You can override this method to process the user input data after they have finished, but before any of the output process has begun. It receives the data as its only parameter, and only what you return will be used.
+
+By default it simply returns what is passed in.
+
+_Example_
+
+In this example, the user supplied name is cleaned and prepared to be used as a directory name and key:
+
+```javascript
+prompt: [{
+	name: 'name',
+	description: 'Please choose a name for your theme:',
+	required: true
+}],
+processData: function ( data ) {
+	data.key = data.name
+	               .toLowerCase()
+	               .trim()
+	               .replace( /[^a-z0-9_-]/g, '-' )
+	               .replace( /-+/g, '-' );
+	return data;
+}
+```
+
+--
+
 
 ### Command line
 

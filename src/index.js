@@ -1,9 +1,10 @@
-var Handlebars = require('handlebars');
 var prompt = require('prompt');
 var shell = require('shelljs');
 require('colors');
 
 module.exports = function (_, anvil) {
+	// import( "./scaffold.js" )
+
 	var exit = function () {
 		// Kill the current process, effectively stopping
 		// any other plugins from running
@@ -18,9 +19,9 @@ module.exports = function (_, anvil) {
 	var plugin = anvil.plugin({
 		name: 'anvil.scaffold',
 		activity: 'scaffold',
-		doScaffold: false,
-		scaffold: null,
-		viewContext: {},
+		currentAction: null,
+		currentScaffold: null,
+		scaffolds: {},
 		commander: commands,
 		configure: function (config, command, done) {
 			// Normalize the command from any of its aliases
@@ -28,23 +29,17 @@ module.exports = function (_, anvil) {
 
 			// Expose a static method on anvil for defining scaffolds
 			anvil.scaffold = function (format) {
-				// Instead of tracking all registered scaffolds,
-				// only capture the scaffold that matches the name
-				// of the scaffolding command
-				if (format.type !== action) {
-					return;
-				}
-
-				plugin.scaffold = format;
+				plugin.scaffolds[ format.type ] = new Scaffold( format );
 			};
 
 			// Continue if the scaffold option is not used on the command line
 			if (!action) {
-				done(this.doScaffold);
+				done(false);
 				return;
 			}
 
-			this.doScaffold = true;
+
+			this.currentAction = action;
 
 			// Force scaffolding to run before any other plugin,
 			// allowing any plugin to generate a scaffold
@@ -56,13 +51,22 @@ module.exports = function (_, anvil) {
 			// Recursively walk over the current format,
 			// generating directories where the value is an
 			// object or files when the value is a string
-			var model = this.viewContext;
+			var scaffold = this.currentScaffold;
 
 			_.each(format, function (value, key) {
+
+				// Support a value that is a function. If present
+				// the result of the function should be used as the value
+				if ( typeof value === "function" ) {
+					value = value.call( scaffold, scaffold._viewContext );
+				}
+
 				// Allow using template view data in the key as well,
 				// which enables templated directory and file names
-				var template = Handlebars.compile(key);
-				var itemName = template(model);
+				var itemName = key;
+				if ( scaffold.render ) {
+					itemName = scaffold.render.call( scaffold, "name", key );
+				}
 
 				if (typeof value === 'object') {
 					console.log(('Creating directory: ' + itemName).magenta);
@@ -76,42 +80,44 @@ module.exports = function (_, anvil) {
 					// return to the previous directory
 					shell.cd('..');
 				} else {
-					plugin.writeFile(itemName, value, model);
+					plugin.writeFile(itemName, value);
 				}
 			});
 		},
-		writeFile: function (filename, source, model) {
-			// Generate a new file in the current directory by passing
-			// a string source through a Handlebars template, using the
-			// current viewContext data as the template's model
-			var template = Handlebars.compile(source);
-			var content = template(model);
+		writeFile: function (filename, source) {
+			var scaffold = this.currentScaffold;
 
+			// Generate a new file in the current directory by passing
+			// a string source through a template method if present
+			var content = source;
+			if ( scaffold.render ) {
+				content = scaffold.render.call( scaffold, "file", source, filename );
+			}
+			
 			// Write the post-processed file to disk
 			console.log(('Creating file: ' + filename).magenta);
 			content.to(filename);
 		},
+
 		run: function (done) {
-			if (!this.doScaffold) {
+			this.currentScaffold = plugin.scaffolds[ this.currentAction ];
+
+			if (!this.currentScaffold) {
 				done();
 				return;
 			}
 
-			var scaffold = this.scaffold;
+			var scaffold = this.currentScaffold;
 
 			if (!scaffold.output) {
 				console.log('This scaffold did not specify any output.'.yellow);
 				exit();
 			}
 
-			// At the bare minimum, store the scaffold's type for template consumption
-			_.extend(this.viewContext, scaffold.data, {
-				type: scaffold.type
-			});
-
 			// This scaffold does not require any further user input.
 			// Go ahead and generate the file structure.
 			if (!scaffold.prompt) {
+				scaffold._processData();
 				this.walkDirectories(scaffold.output);
 				exit();
 			}
@@ -125,7 +131,7 @@ module.exports = function (_, anvil) {
 			prompt.start();
 
 			// Automatically extend the view data with any input the user provides at the command prompt
-			prompt.addProperties(this.viewContext, scaffold.prompt, function (err) {
+			prompt.addProperties(scaffold._viewContext, scaffold.prompt, function (err) {
 				if (err) {
 					console.log('\nAn error occurred while trying to fetch user input:'.red);
 					console.log(err);
@@ -134,6 +140,7 @@ module.exports = function (_, anvil) {
 
 				// Generate the file structure now that the view data has
 				// been further populated by the user
+				scaffold._processData();
 				plugin.walkDirectories(scaffold.output);
 				exit();
 			});
