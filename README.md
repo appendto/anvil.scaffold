@@ -124,7 +124,7 @@ _Examples_
 
 `description`
 
-A short description that will (eventually) be shown when when a user runs `anvil scaffold list`
+A short description that will be shown when when a user runs `anvil scaffold list`
 
 _Examples_
 
@@ -349,6 +349,7 @@ processData: function ( data ) {
 Invoking a scaffold from the command line:
 
 ```sh
+anvil scaffold list
 anvil scaffold <type>
 ```
 
@@ -358,6 +359,23 @@ where `type` is the name of a scaffold definition. `scaffold` is also aliased to
 anvil generate backbone:model
 anvil gen jquery-plugin
 ```
+
+#### Listing Available Scaffolds:
+
+If you wanted to list available scaffolds, and you had the plugin example from earlier ready:
+
+```sh
+anvil scaffold list
+```
+
+The expected output (after default Anvil output) would be:
+
+```sh
+Currently available scaffolds:
+  * plugin               Creates a new anvil plugin
+```
+
+#### Running a Scaffold
 
 As an example, if you wanted to scaffold a plugin using our previous definition:
 
