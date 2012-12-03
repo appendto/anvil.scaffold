@@ -19,6 +19,7 @@
     "shelljs": ">=0.0.8",
     "prompt": "",
     "handlebars": "",
-    "colors": ""
+    "colors": "",
+    "lodash": ">=0.10.0"
   }
 }

@@ -14,7 +14,7 @@ anvil install anvil.scaffold
 
 In order for your plugin or task to consume Anvil's scaffolding, it must also be a required plugin within your project's `package.json`:
 
-```js
+```javascript
 {
 	"name": "anvil.exampleplugin",
 	"version": "0.1.0",
@@ -124,7 +124,7 @@ _Examples_
 
 `description`
 
-A short description that will be shown when when a user runs `anvil scaffold list`
+A short description that will be shown on the command line when when a user runs `anvil scaffold list`
 
 _Examples_
 
@@ -133,7 +133,6 @@ _Examples_
 `description: 'Create a new Anvil plugin'`
 
 --
-
 
 `prompt`
 
@@ -239,7 +238,7 @@ output: {
 }
 ```
 
-The data which is used as a model for the templates comes from data optionally supplied in the scaffold or from a user's inputs at the command prompts. This data is automatically merged together for you. The only property passed to `anvil.scaffold` by default is the `type` property.
+The data which is used as a model for the templates comes from data optionally supplied in the scaffold or from a user's inputs at the command prompts. This data is automatically merged together for you. The `type` will be passed to the view template automatically.
 
 Finally, you can supply a function for any one of the values as long as your function returns either a string (the contents of a file), or an object for a new directory level. The final merged user input and `data` from your scaffold will be passed into the method as its only argument.
 
@@ -292,20 +291,22 @@ The following is a list of methods that have default functionality, but you can 
 
 --
 
-`render`:
+`render`
 
 All keys and values on your `output` object are passed through this method. The default `render` method looks like this:
 
 ```javascript
-render: function ( mode, template, filename ) {
-	var template = Handlebars.compile(template);
-	return template(this._viewContext);
+render: function ( data ) {
+	var template = Handlebars.compile( data.template );
+	return template( data.data );
 }
 ```
 
-* `mode`: Will either be `"name"` or `"file"` based on if its rendering a file name/directory name or the contents of a file.
-* `template`: The contents of either the file name/directory name, or the contents of a file
-* `filename`: This is only passed in `"file"` mode, and will be just the name and extension of the file being processed
+The `data` argument contains relevant properties necessary for rendering a string for file output:
+
+* `mode`: Will either be `"name"` or `"file"` based on if it's rendering a file/directory name, or the contents of a file
+* `template`: The contents of either the file/directory name, or the contents of a file
+* `filename`: If in `"file"` mode this will be just the name and extension of the file, otherwise `null`
 
 To disable templating entirely, pass `false` as the value for `render`:
 
@@ -317,9 +318,9 @@ render: false
 
 `processData`
 
-You can override this method to process the user input data after they have finished, but before any of the output process has begun. It receives the data as its only parameter, and only what you return will be used.
+You can override this method to manipulate the data being passed to any templates right before templating occurs, e.g. right after user input has been retrieved. It receives the data as its only parameter, and only what you return will be used as the new template data.
 
-By default it simply returns what is passed in.
+By default it simply returns the data that is passed in.
 
 _Example_
 
@@ -342,7 +343,6 @@ processData: function ( data ) {
 ```
 
 --
-
 
 ### Command line
 
@@ -377,7 +377,7 @@ Currently available scaffolds:
 
 #### Running a Scaffold
 
-As an example, if you wanted to scaffold a plugin using our previous definition:
+If you wanted to scaffold a plugin, for example, using our previous definition:
 
 ```sh
 anvil scaffold plugin
@@ -398,4 +398,3 @@ Creating directory: lib
 Creating directory: src
 Creating file: index.js
 ```
-
