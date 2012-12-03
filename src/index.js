@@ -54,6 +54,10 @@ module.exports = function ( _, anvil ) {
 			// object or files when the value is a string
 			var scaffold = this.currentScaffold;
 
+			if ( typeof format === "function" ) {
+				format = format.call( scaffold, scaffold._viewContext );
+			}
+
 			_.each( format, function ( value, key ) {
 				// Support a value that is a function. If present
 				// the result of the function should be used as the value
