@@ -99,7 +99,7 @@ module.exports = function ( _, anvil ) {
 			// a string source through a template method if present
 			if ( scaffold.render ) {
 				content = scaffold.render.call( scaffold, {
-					type: "file",
+					mode: "file",
 					filename: filename,
 					template: source,
 					data: lodash.clone( scaffold._viewContext, true )
