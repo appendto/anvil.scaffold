@@ -1,5 +1,6 @@
 var prompt = require('prompt');
 var shell = require('shelljs');
+var path = require('path');
 require('colors');
 
 module.exports = function (_, anvil) {
@@ -45,7 +46,59 @@ module.exports = function (_, anvil) {
 			// allowing any plugin to generate a scaffold
 			anvil.config.activityOrder.unshift('scaffold');
 		
-			done();
+			// Define our own scaffolds
+			var scaffolds = {
+				"plugin": function ( done ) {
+					var source = path.dirname(__filename);
+					source = path.resolve(source, "./tmpl/plugin.template.js");
+
+					anvil.fs.read(source, function (content) {
+						anvil.scaffold({
+							type: 'plugin',
+							description: 'Example scaffold plugin that generates an Anvil plugin',
+							prompt: [{
+								name: 'name',
+								description: 'Please choose a name for this plugin:',
+								required: true
+							}],
+							output: {
+								lib: {},
+								src: {
+									'index.js': content
+								}
+							}
+						});
+
+						done();
+					});
+				},
+				"scaffold": function ( done ) {
+					var source = path.dirname(__filename);
+					source = path.resolve(source, "./tmpl/scaffold.template.js");
+
+					anvil.fs.read(source, function (content) {
+						anvil.scaffold({
+							type: 'scaffold',
+							description: 'Example scaffold plugin that generates a scaffold',
+							prompt: [{
+								name: 'name',
+								description: 'Please choose a name for this scaffold:',
+								required: true
+							}],
+							output: {
+								lib: {},
+								src: {
+									'index.js': content
+								}
+							}
+						});
+
+						done();
+					});
+				}
+			}
+
+			anvil.scheduler.mapped( scaffolds, done );
 		},
 		walkDirectories: function (format) {
 			// Recursively walk over the current format,
