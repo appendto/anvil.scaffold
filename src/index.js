@@ -4,10 +4,16 @@ var lodash = require( "lodash" );
 var p = require( "path" );
 require( "colors" );
 
-module.exports = function ( _, anvil ) {
+module.exports = function ( _, anvil, testing ) {
 	// import( "./scaffold.js" )
 
 	var exit = function () {
+		// TEMPORARY: Will be removed when command
+		// support is added to Anvil
+		if ( testing ) {
+			testing();
+			return;
+		}
 		// Kill the current process, effectively stopping
 		// any other plugins from running
 		process.exit( 0 );
@@ -77,15 +83,15 @@ module.exports = function ( _, anvil ) {
 
 			// Handles converting callback functions to either
 			// an object or string for further use
-			function parse( dir, path, done ) {
-				if ( typeof dir === "function" ) {
+			function parse( content, path, done ) {
+				if ( typeof content === "function" ) {
 					// Our done helper
 					var _done = function ( data ) {
-						parse( data, path, done );
+						write( data, path, done );
 					};
 
 					// Pass off control to the callback
-					var ret = dir.call( scaffold, lodash.clone( scaffold._viewContext, true ), _done );
+					var ret = content.call( scaffold, lodash.clone( scaffold._viewContext, true ), _done );
 					
 					// If they return a value, treat it as synchronous
 					if ( typeof ret === "string" || typeof ret === "object" ) {
@@ -95,7 +101,7 @@ module.exports = function ( _, anvil ) {
 					return;
 				}
 
-				write( dir, path, done );
+				write( content, path, done );
 			}
 
 			function write( content, path, done ) {
@@ -137,7 +143,7 @@ module.exports = function ( _, anvil ) {
 								// No error handler yet
 							}
 
-							console.log( ( "Created directory: " + path ).magenta );
+							anvil.log.debug( "Created directory: " + path );
 
 							// Process all sub items of this directory
 							anvil.scheduler.mapped( mapped, done );
@@ -148,7 +154,7 @@ module.exports = function ( _, anvil ) {
 					}
 				} else {
 					if ( path === "" ) {
-						anvil.error( "You must supply an object to `output`" );
+						anvil.log.error( "You must supply an object to `output`" );
 						exit();
 					}
 
@@ -170,7 +176,7 @@ module.exports = function ( _, anvil ) {
 						if ( err ) {
 							// No error handler yet
 						}
-						console.log( ( "Created file: " + path ).magenta);
+						anvil.log.debug( "Created file: " + path );
 						done();
 					});
 				}
@@ -192,8 +198,9 @@ module.exports = function ( _, anvil ) {
 			}
 
 			if ( !scaffold.output ) {
-				console.log( "This scaffold did not specify any output.".yellow );
+				anvil.log.warning( "This scaffold did not specify any output." );
 				exit();
+				return;
 			}
 
 			// This scaffold does not require any further user input.
@@ -217,9 +224,10 @@ module.exports = function ( _, anvil ) {
 			// Automatically extend the view data with any input the user provides at the command prompt
 			prompt.addProperties( scaffold._viewContext, scaffold.prompt, function ( err ) {
 				if ( err ) {
-					console.log( "\nAn error occurred while trying to fetch user input:".red );
-					console.log( err );
+					anvil.log.error( "\nAn error occurred while trying to fetch user input:" );
+					anvil.log.error( err );
 					exit();
+					return;
 				}
 
 				// Generate the file structure now that the view data has
