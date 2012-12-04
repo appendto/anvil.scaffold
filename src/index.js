@@ -2,7 +2,6 @@ var prompt = require( "prompt" );
 var shell = require( "shelljs" );
 var lodash = require( "lodash" );
 var p = require( "path" );
-require( "colors" );
 
 module.exports = function ( _, anvil, testing ) {
 	// import( "./scaffold.js" )
@@ -38,6 +37,14 @@ module.exports = function ( _, anvil, testing ) {
 			// Expose a static method on anvil for defining scaffolds
 			anvil.scaffold = function ( format ) {
 				plugin.scaffolds[ format.type ] = new Scaffold( format );
+			};
+
+			// Provide a helper method for just reading file asynchronously
+			// and on-demand when a scaffold is invoked
+			anvil.scaffold.file = function ( filename ) {
+				return function ( viewModel, done ) {
+					anvil.fs.read( filename, done );
+				};
 			};
 
 			// TODO: inject built-in scaffolds from external files here

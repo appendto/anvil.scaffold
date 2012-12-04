@@ -264,6 +264,16 @@ output: {
 }
 ```
 
+In fact, having a file loaded and templated when the scaffold is invoked is such a common use case that there is also a helper method for handing this:
+
+```javascript
+output: {
+	"yourfile.js": anvil.scaffold.file( __dirname + "/templates/yourfile.js" )
+}
+```
+
+Using this helper will return a function that will automatically load the file asynchronously and pass the contents back through the `done` method.
+
 --
 
 `data`
