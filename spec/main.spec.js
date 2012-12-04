@@ -89,20 +89,20 @@ var sampleScaffold1 = {
 var sampleScaffold2 = {
 	type: "plugin",
 	description: "An example plugin",
-	output: function () {
-		return {
+	output: function ( data, done ) {
+		done({
 			lib: function ( data, done ) {
 				setTimeout( function () {
 					done( {} );
 				}, 200 );
 			},
 			src: {
-				"index.js": function () {
-					return "(function(){}());";
+				"index.js": function ( data, done ) {
+					done( "(function(){}());" );
 				}
 			},
 			"build.json": "{}"
-		};
+		});
 	}
 };
 
@@ -137,19 +137,6 @@ describe( "anvil.scaffold", function () {
 		});
 
 		it( "should recursively call functions to generate the correct output", function ( done ) {
-			plugin.configure({}, { scaffold: "plugin" }, function () {
-				anvil.scaffold( sampleScaffold2 );
-				test.callback = function () {
-					expect( !!filesystem.lib ).to.be.ok();
-					expect( !!filesystem.src ).to.be.ok();
-					expect( filesystem.src[ "index.js"] ).to.be( sampleScaffold1.output.src[ "index.js" ]);
-					done();
-				};
-				plugin.run( noop );
-			});
-		});
-
-		it( "should support both sync and async callback methods", function ( done ) {
 			plugin.configure({}, { scaffold: "plugin" }, function () {
 				anvil.scaffold( sampleScaffold2 );
 				test.callback = function () {

@@ -85,19 +85,10 @@ module.exports = function ( _, anvil, testing ) {
 			// an object or string for further use
 			function parse( content, path, done ) {
 				if ( typeof content === "function" ) {
-					// Our done helper
-					var _done = function ( data ) {
-						write( data, path, done );
-					};
-
 					// Pass off control to the callback
-					var ret = content.call( scaffold, lodash.clone( scaffold._viewContext, true ), _done );
-					
-					// If they return a value, treat it as synchronous
-					if ( typeof ret === "string" || typeof ret === "object" ) {
-						_done( ret );
-					}
-
+					content.call( scaffold, lodash.clone( scaffold._viewContext, true ), function ( data ) {
+						write( data, path, done );
+					} );
 					return;
 				}
 
