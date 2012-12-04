@@ -48,7 +48,7 @@ module.exports = function (_, anvil) {
 				output: {
 					lib: {},
 					src: {
-						'index.js': anvil.scaffold.file( __dirname + '/plugin.template.js' ) )
+						'index.js': anvil.scaffold.file( __dirname + '/plugin.template.js' )
 					}
 				}
 			});
