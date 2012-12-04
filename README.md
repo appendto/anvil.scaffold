@@ -34,8 +34,6 @@ Once `anvil.scaffold` is installed, you can start consuming it with your own Anv
 
 ```javascript
 module.exports = function (_, anvil) {
-	var content = readFileAsString('./plugin.template.js');
-
 	return anvil.plugin({
 		name: 'anvil.scaffold.plugin',
 		configure: function (config, command, done) {
@@ -50,7 +48,7 @@ module.exports = function (_, anvil) {
 				output: {
 					lib: {},
 					src: {
-						'index.js': content
+						'index.js': anvil.scaffold.file( __dirname + /plugin.template.js') )
 					}
 				}
 			});

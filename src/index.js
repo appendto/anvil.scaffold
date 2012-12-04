@@ -39,7 +39,7 @@ module.exports = function ( _, anvil, testing ) {
 				plugin.scaffolds[ format.type ] = new Scaffold( format );
 			};
 
-			// Provide a helper method for just reading file asynchronously
+			// Provide a helper method for just reading a file asynchronously
 			// and on-demand when a scaffold is invoked
 			anvil.scaffold.file = function ( filename ) {
 				return function ( viewModel, done ) {
