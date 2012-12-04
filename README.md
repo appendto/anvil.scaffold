@@ -240,16 +240,16 @@ output: {
 
 The data which is used as a model for the templates comes from data optionally supplied in the scaffold or from a user's inputs at the command prompts. This data is automatically merged together for you. The `type` will be passed to the view template automatically.
 
-Finally, you can supply a function for any one of the values as long as your function returns either a string (the contents of a file), or an object for a new directory level. The final merged user input and `data` from your scaffold will be passed into the method as its only argument.
+Finally, you can supply a function for any one of the values as long as your function passes a either a string (the contents of a file), or an object for a new directory level. The final merged user input and `data` from your scaffold will be passed into the method as its only argument. These functions are evaluated asynchronously and therefore must invoke their `done` callback to continue, passing the value into the callback.
 
 This example would generate a different file based on theoretical user input:
 
 ```javascript
-output: function ( data ) {
+output: function ( data, done ) {
 	if ( data.short ) {
-		return { "short.js": fileContentsShort }
+		done( { "short.js": fileContentsShort } );
 	} else {
-		return { "normal.js": fileContentsNormal }
+		done( { "normal.js": fileContentsNormal } );
 	}
 }
 ```
@@ -258,8 +258,8 @@ You can (and should) use this to load files just when you need them instead of l
 
 ```javascript
 output: {
-	"yourfile.js": function () {
-		return fs.readFileSync( "./templates/yourfile.js", "utf8" );
+	"yourfile.js": function ( data, done ) {
+		anvil.fs.read( "./templates/yourfile.js", done );
 	}
 }
 ```
@@ -338,6 +338,7 @@ processData: function ( data ) {
 	               .trim()
 	               .replace( /[^a-z0-9_-]/g, '-' )
 	               .replace( /-+/g, '-' );
+
 	return data;
 }
 ```
